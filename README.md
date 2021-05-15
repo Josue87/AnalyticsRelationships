@@ -24,6 +24,13 @@ This script try to get related domains / subdomains by looking at Google Analyti
 > python3 analyticsrelationships.py -u https://www.example.com
 ```
 
+## Example
+
+An example of use is shown in the following image (just a little bit obfuscated):
+
+![image](https://user-images.githubusercontent.com/16885065/118356444-84475300-b575-11eb-9b1f-bc5c587d620f.png)
+
+
 # Author
 
 This project has been developed by:

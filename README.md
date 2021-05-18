@@ -89,6 +89,24 @@ Or redirect output to a file (banner or information messages are sent to the err
 ```
 ## Examples
 
+### Python
+
+Output redirection to file /tmp/example.txt:
+
+![image](https://user-images.githubusercontent.com/16885065/118681597-fdf27180-b7ff-11eb-9b4d-c6738d1bc5ff.png)
+
+Without redirection:
+
+![image](https://user-images.githubusercontent.com/16885065/118681802-28442f00-b800-11eb-8a95-8b0de24ec691.png)
+
+### GO
+
+Without redirection:
+
+![image](https://user-images.githubusercontent.com/16885065/118682807-0e571c00-b801-11eb-8da2-d9e3d3c1d555.png)
+
+Working with file redirection works just like in Python.
+
 # Author
 
 This project has been developed by:

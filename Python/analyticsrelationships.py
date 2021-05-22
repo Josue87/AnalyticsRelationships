@@ -68,7 +68,7 @@ def get_googletagmanager(url):
     return False, None
 
 def get_domains(id):
-    pattern = "/relationships/[a-z0-9\-\_]+\.[a-z]+"
+    pattern = "/relationships/[a-z0-9\-\_\.]+\.[a-z]+"
     url = f"https://builtwith.com/relationships/tag/{id}"
     try:
         u = urllib.request.urlopen(url)

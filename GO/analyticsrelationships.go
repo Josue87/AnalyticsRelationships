@@ -84,7 +84,7 @@ func getUA(url string) [][]string {
 }
 
 func getDomains(id string) [][]string {
-	pattern := regexp.MustCompile("/relationships/[a-z0-9\\-\\_]+\\.[a-z]+")
+	pattern := regexp.MustCompile("/relationships/[a-z0-9\\-\\_\\.]+\\.[a-z]+")
 	url := "https://builtwith.com/relationships/tag/" + id
 	response := getURLResponse(url)
 	var result = [][]string{}

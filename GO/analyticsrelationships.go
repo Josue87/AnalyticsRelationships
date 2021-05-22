@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -42,12 +41,12 @@ func getURLResponse(url string) string {
 	client := &http.Client{Transport: tr}
 	res, err := client.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return ""
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		return ""
 	}
 	return string(body)
 }
@@ -83,17 +82,46 @@ func getUA(url string) [][]string {
 	return result
 }
 
-func getDomains(id string) [][]string {
+func cleanRelationShips(domains [][]string) []string {
+	var allDomains []string
+	for _, domain := range domains {
+		allDomains = append(allDomains, strings.Replace(domain[0], "/relationships/", "", -1))
+	}
+	return allDomains
+}
+
+func getDomainsFromBuiltWith(id string) []string {
 	pattern := regexp.MustCompile("/relationships/[a-z0-9\\-\\_\\.]+\\.[a-z]+")
 	url := "https://builtwith.com/relationships/tag/" + id
 	response := getURLResponse(url)
-	var result = [][]string{}
+	var allDomains []string = nil
 	if response != "" {
-		result = pattern.FindAllStringSubmatch(response, -1)
-	} else {
-		result = nil
+		allDomains = cleanRelationShips(pattern.FindAllStringSubmatch(response, -1))
 	}
-	return result
+	return allDomains
+}
+
+func getDomainsFromHackerTarget(id string) []string {
+	url := "https://api.hackertarget.com/analyticslookup/?q=" + id
+	response := getURLResponse(url)
+	var allDomains []string = nil
+	if response != "" {
+		allDomains = strings.Split(response, "\n")
+	}
+	return allDomains
+}
+
+func getDomains(id string) []string {
+	var allDomains []string = getDomainsFromBuiltWith(id)
+	domains2 := getDomainsFromHackerTarget(id)
+	if domains2 != nil {
+		for _, domain := range domains2 {
+			if !contains(allDomains, domain) {
+				allDomains = append(allDomains, domain)
+			}
+		}
+	}
+	return allDomains
 }
 
 func contains(data []string, value string) bool {
@@ -120,7 +148,7 @@ func main() {
 	urlGoogleTagManager := getGoogleTagManager(*url)
 	if urlGoogleTagManager != "" {
 		println("[+] URL with UA: " + urlGoogleTagManager)
-		println("[+] Obtaining information from builtwith\n")
+		println("[+] Obtaining information from builtwith hackertarget\n")
 		var visited = []string{}
 		for _, ua := range getUA(urlGoogleTagManager) {
 			baseUA := strings.Join(strings.Split(ua[0], "-")[0:2], "-")
@@ -132,7 +160,7 @@ func main() {
 					fmt.Println("|__ NOT FOUND")
 				}
 				for _, domain := range allDomains {
-					fmt.Println("|__ " + strings.Replace(domain[0], "/relationships/", "", -1))
+					fmt.Println("|__ " + domain)
 				}
 				fmt.Println("")
 			}

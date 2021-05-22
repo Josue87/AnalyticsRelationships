@@ -67,16 +67,39 @@ def get_googletagmanager(url):
         print(e)
     return False, None
 
-def get_domains(id):
+def clean_relationships(domains):
+    all_domains = []
+    for domain in domains:
+        all_domains.append(domain.replace('/relationships/',''))
+    return all_domains
+
+def get_domains_from_builtwith(id):
     pattern = "/relationships/[a-z0-9\-\_\.]+\.[a-z]+"
     url = f"https://builtwith.com/relationships/tag/{id}"
     try:
         u = urllib.request.urlopen(url)
         data = u.read().decode(errors="ignore")
-        return re.findall(pattern, data)
+        return clean_relationships(re.findall(pattern, data))
     except:
-        return []
+        pass
+    return []
 
+def get_domains_from_hackertarget(id):
+    url = f"https://api.hackertarget.com/analyticslookup/?q={id}"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text.split("\n")
+    except:
+        pass
+    return []
+
+def get_domains(id):
+    all_domains = set()
+    all_domains = all_domains.union(get_domains_from_builtwith(id))
+    all_domains = all_domains.union(get_domains_from_hackertarget(id))
+    return list(all_domains)
+    
 def show_data(data):
     all_uas = [] # avoid duplicates
     if data:
@@ -90,7 +113,7 @@ def show_data(data):
                 domains = get_domains(analytics_id)
                 if domains:
                     for domain in get_domains(analytics_id):
-                        print(f"|__ {domain.replace('/relationships/','')}")
+                        print(f"|__ {domain}")
                     
                 else:
                     print("|__ NOT FOUND")
@@ -111,7 +134,7 @@ if __name__ == "__main__":
     tagmanager, data = get_googletagmanager(url)
     if tagmanager and data:
         stderr.writelines(f"[+] URL with UA: {data}\n")
-        stderr.writelines("[+] Obtaining information from builtwith\n")
+        stderr.writelines("[+] Obtaining information from builtwith and hackertarget\n")
         uas = get_UA(data)
         show_data(uas)
     elif data:

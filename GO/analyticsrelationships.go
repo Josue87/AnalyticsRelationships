@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func banner() {
@@ -38,7 +39,10 @@ func getURLResponse(url string) string {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	client := &http.Client{Transport: tr}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   3 * time.Second,
+	}
 	res, err := client.Get(url)
 	if err != nil {
 		return ""
@@ -133,40 +137,70 @@ func contains(data []string, value string) bool {
 	return false
 }
 
+func getNewsUAS(uas [][]string, visitedUAS []string) []string {
+	var newUAS []string
+	for _, ua := range uas {
+		finalUA := strings.Join(strings.Split(ua[0], "-")[0:2], "-")
+		if !contains(visitedUAS, finalUA) && !contains(newUAS, finalUA) {
+			newUAS = append(newUAS, finalUA)
+		}
+	}
+	return newUAS
+}
+
 func main() {
-	url := flag.String("url", "", "URL to extract Google Analytics ID")
+	u := flag.String("url", "", "URL to extract Google Analytics ID")
 	flag.Parse()
 	banner()
-	if *url == "" {
+	if *u == "" {
 		println("Usage: ./analyticsrelationships --url https://www.example.com")
 		return
 	}
-	if !strings.HasPrefix(*url, "http") {
-		*url = "https://" + *url
+	if !strings.HasPrefix(*u, "http") {
+		*u = "https://" + *u
 	}
-	println("[+] Analyzing url: " + *url)
-	urlGoogleTagManager := getGoogleTagManager(*url)
-	if urlGoogleTagManager != "" {
-		println("[+] URL with UA: " + urlGoogleTagManager)
-		println("[+] Obtaining information from builtwith hackertarget\n")
-		var visited = []string{}
-		for _, ua := range getUA(urlGoogleTagManager) {
-			baseUA := strings.Join(strings.Split(ua[0], "-")[0:2], "-")
-			if !contains(visited, baseUA) {
-				visited = append(visited, baseUA)
-				fmt.Println(">> " + baseUA)
-				allDomains := getDomains(baseUA)
-				if len(allDomains) == 0 {
-					fmt.Println("|__ NOT FOUND")
-				}
-				for _, domain := range allDomains {
-					fmt.Println("|__ " + domain)
-				}
-				fmt.Println("")
-			}
+	urls := []string{*u}
+	var visitedURLS []string
+	var visitedUAS []string
+	for len(urls) > 0 {
+		ok := false
+		url := urls[0]
+		urls = urls[1:]
+		if contains(visitedURLS, url) {
+			continue
 		}
-		println("\n[+] Done!")
-	} else {
-		println("[-] Tagmanager URL not fount")
+		visitedURLS = append(visitedURLS, url)
+		println("\n[+] Analyzing url: " + url)
+		urlGoogleTagManager := getGoogleTagManager(url)
+		if urlGoogleTagManager != "" {
+			println("[+] URL with UA: " + urlGoogleTagManager)
+			println("[+] Obtaining information from builtwith hackertarget\n")
+			uas := getUA(urlGoogleTagManager)
+			if len(uas) > 0 {
+				ok = true
+			}
+			if newsUAS := getNewsUAS(uas, visitedUAS); len(newsUAS) > 0 {
+				for _, ua := range newsUAS {
+					if !contains(visitedUAS, ua) {
+						visitedUAS = append(visitedUAS, ua)
+						fmt.Println(">> " + ua)
+						allDomains := getDomains(ua)
+						if len(allDomains) == 0 {
+							fmt.Println("|__ NOT FOUND")
+						}
+						for _, domain := range allDomains {
+							fmt.Println("|__ " + domain)
+							urls = append(urls, "https://"+domain)
+						}
+					}
+				}
+			} else if ok {
+				println("[!] No news Analytics IDs found...")
+			}
+		} else {
+			println("[-] Tagmanager URL not found")
+		}
 	}
+	println("\n[+] Done!")
+
 }

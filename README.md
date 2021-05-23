@@ -35,6 +35,8 @@ This script try to get related domains / subdomains by looking at Google Analyti
 ->  "UA-\d+-\d+"
 ```
 
+The tool goes through all the domains or subdomains found, and tries to obtain different IDs. It only checks for unique IDs or domains, it ignores repeats.
+
 ## Available versions:
 
 * [Python](Python)

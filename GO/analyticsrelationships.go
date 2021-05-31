@@ -43,7 +43,13 @@ func getURLResponse(url string) string {
 		Transport: tr,
 		Timeout:   3 * time.Second,
 	}
-	res, err := client.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		return ""
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Linux; Android 10; SM-A205U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.86 Mobile Safari/537.36")
+	res, err := client.Do(req)
 	if err != nil {
 		return ""
 	}
@@ -59,12 +65,17 @@ func getGoogleTagManager(targetURL string) string {
 	url := ""
 	response := getURLResponse(targetURL)
 	if response != "" {
-		pattern := regexp.MustCompile("www\\.googletagmanager\\.com/ns\\.html\\?id=[A-Z0-9\\-]+")
-		data := pattern.FindStringSubmatch(response)
+		pattern1 := regexp.MustCompile("www\\.googletagmanager\\.com/gtag/js\\?id=[A-Z0-9\\-]+")
+		pattern2 := regexp.MustCompile("www\\.googletagmanager\\.com/ns\\.html\\?id=[A-Z0-9\\-]+")
+		data := pattern1.FindStringSubmatch(response)
+		if len(data) > 0 {
+			return "https://" + data[0]
+		}
+		data = pattern2.FindStringSubmatch(response)
 		if len(data) > 0 {
 			url = "https://" + strings.Replace(data[0], "ns.html", "gtm.js", -1)
 		} else {
-			pattern = regexp.MustCompile("GTM-[A-Z0-9]+")
+			pattern := regexp.MustCompile("GTM-[A-Z0-9]+")
 			data = pattern.FindStringSubmatch(response)
 			if len(data) > 0 {
 				url = "https://www.googletagmanager.com/gtm.js?id=" + data[0]
@@ -106,10 +117,10 @@ func getDomainsFromBuiltWith(id string) []string {
 }
 
 func getDomainsFromHackerTarget(id string) []string {
-	url := "https://api.hackertarget.com/analyticslookup/?q=" + id
+	url := "https://api.hackertarget.com/analyticslookup/?q=" + id // Limited requests!
 	response := getURLResponse(url)
 	var allDomains []string = nil
-	if response != "" {
+	if response != "" && !strings.Contains(response, "API count exceeded") {
 		allDomains = strings.Split(response, "\n")
 	}
 	return allDomains

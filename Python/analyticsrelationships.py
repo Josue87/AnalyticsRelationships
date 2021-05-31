@@ -32,11 +32,12 @@ def banner():
 
 def clean_ua(uas):
     result = []
-    for ua in uas:
-        analytics_id = ua.split('-')
-        analytics_id = "-".join(analytics_id[0:2])
-        if analytics_id not in result:
-            result.append(analytics_id)
+    if uas is not None:
+        for ua in uas:
+            analytics_id = ua.split('-')
+            analytics_id = "-".join(analytics_id[0:2])
+            if analytics_id not in result:
+                result.append(analytics_id)
     return result
 
 def get_UA(link):
@@ -96,10 +97,10 @@ def get_domains_from_builtwith(id):
     return []
 
 def get_domains_from_hackertarget(id):
-    url = f"https://api.hackertarget.com/analyticslookup/?q={id}"
+    url = f"https://api.hackertarget.com/analyticslookup/?q={id}" # Limited requests!
     try:
         response = requests.get(url)
-        if response.status_code == 200:
+        if response.status_code == 200 and "API count exceeded" not in response.text: 
             return response.text.split("\n")
     except:
         pass
@@ -123,15 +124,17 @@ def show_data(data):
 
 def get_results(uas):
     data = {}
-    for ua in uas:
-        data[ua] = get_domains(ua) 
+    if uas is not None:
+        for ua in uas:
+            data[ua] = get_domains(ua) 
     return data
 
 def get_news_uas(uas, visited_uas):
     news = []
-    for ua in uas:
-        if ua not in visited_uas and ua not in news:
-            news.append(ua)
+    if uas is not None:
+        for ua in uas:
+            if ua not in visited_uas and ua not in news:
+                news.append(ua)
     return news
 
 

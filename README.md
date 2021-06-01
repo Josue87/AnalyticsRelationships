@@ -60,6 +60,13 @@ Installation according to language.
 > go build -ldflags "-s -w"
 ```
 
+### Docker
+```
+> git clone https://github.com/Josue87/AnalyticsRelationships.git
+> cd AnalyticsRelationships
+> docker build -t analyticsrelationships:latest . 
+```
+
 ## Usage
 
 Usage according to language
@@ -86,6 +93,18 @@ Or redirect output to a file (banner or information messages are sent to the err
 
 ```
 >  ./analyticsrelationships --url https://www.example.com > /tmp/example.txt
+```
+
+### Docker
+
+```
+>  docker run -it  analyticsrelationships:latest https://www.example.com
+```
+
+Or redirect output to a file (banner or information messages are sent to the error output):
+
+```
+>  docker run -it  analyticsrelationships:latest https://www.example.com > /tmp/example.txt
 ```
 ## Examples
 

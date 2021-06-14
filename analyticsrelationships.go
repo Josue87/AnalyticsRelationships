@@ -148,7 +148,7 @@ func main() {
 	urlGoogleTagManager := getGoogleTagManager(*url)
 	if urlGoogleTagManager != "" {
 		println("[+] URL with UA: " + urlGoogleTagManager)
-		println("[+] Obtaining information from builtwith hackertarget\n")
+		println("[+] Obtaining information from builtwith and hackertarget\n")
 		var visited = []string{}
 		for _, ua := range getUA(urlGoogleTagManager) {
 			baseUA := strings.Join(strings.Split(ua[0], "-")[0:2], "-")

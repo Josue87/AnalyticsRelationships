@@ -56,7 +56,7 @@ Installation according to language.
 
 ```
 > git clone https://github.com/Josue87/AnalyticsRelationships.git
-> cd AnalyticsRelationships/GO
+> cd AnalyticsRelationships/
 > go build -ldflags "-s -w"
 ```
 

@@ -1,33 +1,29 @@
-![Supported Python versions](https://img.shields.io/badge/python-3.6+-blue.svg?style=flat-square&logo=python)
-[![Go version](https://img.shields.io/badge/go-v1.16-blue)](https://golang.org/dl/#stable)
-![License](https://img.shields.io/badge/license-GNU-green.svg?style=flat-square&logo=gnu)
+<h1 align="center">
+  <b>AnalyticsRelationships</b>
+  <br>
+</h1>
+<p align="center">
+  <a href="https://golang.org/dl/#stable">
+    <img src="https://img.shields.io/badge/go-1.16-blue.svg?style=flat-square&logo=go">
+  </a>
+  <a href="https://www.python.org/">
+    <img src="https://img.shields.io/badge/python-3.6+-blue.svg?style=flat-square&logo=go">
+  </a>
+   <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">
+    <img src="https://img.shields.io/badge/license-GNU-green.svg?style=square&logo=gnu">
+   <a href="https://twitter.com/JosueEncinar">
+    <img src="https://img.shields.io/badge/author-@JosueEncinar-orange.svg?style=square&logo=twitter">
+  </a>
+</p>
 
 
-# DomainRelationShips
+<p align="center">
+This script try to get related domains / subdomains by looking at Google Analytics IDs from a URL. First search for ID of Google Analytics in the webpage and then request to <b>builtwith</b> and <b>hackertarget</b> with the ID.
+</p>
+<br/>
+<hr/>
 
-```
-██╗   ██╗ █████╗       ██╗██████╗                        
-██║   ██║██╔══██╗      ██║██╔══██╗                       
-██║   ██║███████║█████╗██║██║  ██║                       
-██║   ██║██╔══██║╚════╝██║██║  ██║                       
-╚██████╔╝██║  ██║      ██║██████╔╝                       
- ╚═════╝ ╚═╝  ╚═╝      ╚═╝╚═════╝                        
-                                                         
-██████╗  ██████╗ ███╗   ███╗ █████╗ ██╗███╗   ██╗███████╗
-██╔══██╗██╔═══██╗████╗ ████║██╔══██╗██║████╗  ██║██╔════╝
-██║  ██║██║   ██║██╔████╔██║███████║██║██╔██╗ ██║███████╗
-██║  ██║██║   ██║██║╚██╔╝██║██╔══██║██║██║╚██╗██║╚════██║
-██████╔╝╚██████╔╝██║ ╚═╝ ██║██║  ██║██║██║ ╚████║███████║
-╚═════╝  ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝
-
-> Get related domains / subdomains by looking at Google Analytics IDs
-> Python/GO versions
-> By @JosueEncinar
-```
-
-This script try to get related domains / subdomains by looking at Google Analytics IDs from a URL. First search for ID of Google Analytics in the webpage and then request to **builtwith** and **hackertarget** with the ID.
-
-**Note**: It does not work with all websites.It is searched by the following expressions: 
+**Note**: It does not work with all websites. It is searched by the following expressions: 
 
 ```
 ->  "www\.googletagmanager\.com/ns\.html\?id=[A-Z0-9\-]+"
@@ -38,7 +34,7 @@ This script try to get related domains / subdomains by looking at Google Analyti
 ## Available versions:
 
 * [Python](Python)
-* [GO](GO)
+* [GO](.)
 
 ## Installation:
 
@@ -83,6 +79,7 @@ Or redirect output to a file (banner or information messages are sent to the err
 python3 analyticsrelationships.py -u https://www.example.com > /tmp/example.txt
 ```
 
+
 ### GO
 
 ```
@@ -95,7 +92,21 @@ Or redirect output to a file (banner or information messages are sent to the err
 >  ./analyticsrelationships --url https://www.example.com > /tmp/example.txt
 ```
 
+You can also pass a file as input
+
+```
+>  cat file.txt | ./analyticsrelationships 
+```
+
+Or a single URL
+
+```
+>  echo https://www.example.com | ./analyticsrelationships 
+```
+
 ### Docker
+
+Only Python Version.
 
 ```
 >  docker run -it  analyticsrelationships:latest https://www.example.com
@@ -125,13 +136,6 @@ Without redirection:
 ![image](https://user-images.githubusercontent.com/16885065/118682807-0e571c00-b801-11eb-8da2-d9e3d3c1d555.png)
 
 Working with file redirection works just like in Python.
-
-# Author
-
-This project has been developed by:
-
-* **Josué Encinar García** -- [@JosueEncinar](https://twitter.com/JosueEncinar)
-
 
 # Disclaimer!
 

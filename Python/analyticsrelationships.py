@@ -88,7 +88,7 @@ def get_domains_from_hackertarget(id):
     url = f"https://api.hackertarget.com/analyticslookup/?q={id}"
     try:
         response = requests.get(url)
-        if response.status_code == 200:
+        if response.status_code == 200 and "API count exceeded" not in response.text: 
             return response.text.split("\n")
     except:
         pass

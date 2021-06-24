@@ -1,13 +1,16 @@
 package main
 
 import (
+	"bufio"
 	"crypto/tls"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func banner() {
@@ -26,11 +29,11 @@ func banner() {
 ██████╔╝╚██████╔╝██║ ╚═╝ ██║██║  ██║██║██║ ╚████║███████║
 ╚═════╝  ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝
 
-> Get related domains / subdomains by looking at Google Analytics IDs
-> GO Version
-> By @JosueEncinar
-
 `
+	data += "\033[32m> \033[0mGet related domains / subdomains by looking at Google Analytics IDs\n"
+	data += "\033[32m> \033[0mGO Version\n"
+	data += "\033[32m> \033[0mBy @JosueEncinar\n"
+
 	println(data)
 }
 
@@ -38,7 +41,9 @@ func getURLResponse(url string) string {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	client := &http.Client{Transport: tr}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   time.Second * 3}
 	res, err := client.Get(url)
 	if err != nil {
 		return ""
@@ -51,31 +56,42 @@ func getURLResponse(url string) string {
 	return string(body)
 }
 
-func getGoogleTagManager(targetURL string) string {
-	url := ""
+func getGoogleTagManager(targetURL string) (bool, []string) {
+	var resultTagManager []string
 	response := getURLResponse(targetURL)
 	if response != "" {
 		pattern := regexp.MustCompile("www\\.googletagmanager\\.com/ns\\.html\\?id=[A-Z0-9\\-]+")
 		data := pattern.FindStringSubmatch(response)
 		if len(data) > 0 {
-			url = "https://" + strings.Replace(data[0], "ns.html", "gtm.js", -1)
+			resultTagManager = append(resultTagManager, "https://"+strings.Replace(data[0], "ns.html", "gtm.js", -1))
 		} else {
 			pattern = regexp.MustCompile("GTM-[A-Z0-9]+")
 			data = pattern.FindStringSubmatch(response)
 			if len(data) > 0 {
-				url = "https://www.googletagmanager.com/gtm.js?id=" + data[0]
+				resultTagManager = append(resultTagManager, "https://www.googletagmanager.com/gtm.js?id="+data[0])
+			} else {
+				pattern = regexp.MustCompile("UA-\\d+-\\d+")
+				aux := pattern.FindAllStringSubmatch(response, -1)
+				var result []string
+				for _, r := range aux {
+					result = append(result, r[0])
+				}
+				return true, result
 			}
 		}
 	}
-	return url
+	return false, resultTagManager
 }
 
-func getUA(url string) [][]string {
+func getUA(url string) []string {
 	pattern := regexp.MustCompile("UA-[0-9]+-[0-9]+")
 	response := getURLResponse(url)
-	var result = [][]string{}
+	var result []string
 	if response != "" {
-		result = pattern.FindAllStringSubmatch(response, -1)
+		aux := pattern.FindAllStringSubmatch(response, -1)
+		for _, r := range aux {
+			result = append(result, r[0])
+		}
 	} else {
 		result = nil
 	}
@@ -105,7 +121,7 @@ func getDomainsFromHackerTarget(id string) []string {
 	url := "https://api.hackertarget.com/analyticslookup/?q=" + id
 	response := getURLResponse(url)
 	var allDomains []string = nil
-	if response != "" {
+	if response != "" && !strings.Contains(response, "API count exceeded") {
 		allDomains = strings.Split(response, "\n")
 	}
 	return allDomains
@@ -133,40 +149,59 @@ func contains(data []string, value string) bool {
 	return false
 }
 
-func main() {
-	url := flag.String("url", "", "URL to extract Google Analytics ID")
-	flag.Parse()
-	banner()
-	if *url == "" {
-		println("Usage: ./analyticsrelationships --url https://www.example.com")
-		return
+func showDomains(ua string) {
+	fmt.Println(">> " + ua)
+	allDomains := getDomains(ua)
+	if len(allDomains) == 0 {
+		fmt.Println("|__ NOT FOUND")
 	}
-	if !strings.HasPrefix(*url, "http") {
-		*url = "https://" + *url
+	for _, domain := range allDomains {
+		fmt.Println("|__ " + domain)
 	}
-	println("[+] Analyzing url: " + *url)
-	urlGoogleTagManager := getGoogleTagManager(*url)
-	if urlGoogleTagManager != "" {
-		println("[+] URL with UA: " + urlGoogleTagManager)
-		println("[+] Obtaining information from builtwith and hackertarget\n")
+	fmt.Println("")
+}
+
+func start(url string) {
+	if !strings.HasPrefix(url, "http") {
+		url = "https://" + url
+	}
+	println("[+] Analyzing url: " + url)
+	uaResult, resultTagManager := getGoogleTagManager(url)
+	if len(resultTagManager) > 0 {
 		var visited = []string{}
-		for _, ua := range getUA(urlGoogleTagManager) {
-			baseUA := strings.Join(strings.Split(ua[0], "-")[0:2], "-")
+		var allUAs []string
+		if !uaResult {
+			urlGoogleTagManager := resultTagManager[0]
+			println("[+] URL with UA: " + urlGoogleTagManager)
+			allUAs = getUA(urlGoogleTagManager)
+		} else {
+			println("[+] Found UA directly")
+			allUAs = resultTagManager
+		}
+		println("[+] Obtaining information from builtwith and hackertarget\n")
+		for _, ua := range allUAs {
+			baseUA := strings.Join(strings.Split(ua, "-")[0:2], "-")
 			if !contains(visited, baseUA) {
 				visited = append(visited, baseUA)
-				fmt.Println(">> " + baseUA)
-				allDomains := getDomains(baseUA)
-				if len(allDomains) == 0 {
-					fmt.Println("|__ NOT FOUND")
-				}
-				for _, domain := range allDomains {
-					fmt.Println("|__ " + domain)
-				}
-				fmt.Println("")
+				showDomains(baseUA)
 			}
 		}
 		println("\n[+] Done!")
 	} else {
-		println("[-] Tagmanager URL not fount")
+		println("[-] Tagmanager URL not found")
+	}
+}
+
+func main() {
+	url := flag.String("url", "", "URL to extract Google Analytics ID")
+	flag.Parse()
+	banner()
+	if *url != "" {
+		start(*url)
+	} else {
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			start(scanner.Text())
+		}
 	}
 }

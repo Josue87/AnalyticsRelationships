@@ -137,6 +137,11 @@ Without redirection:
 
 Working with file redirection works just like in Python.
 
+An example with a file:
+
+![image](https://user-images.githubusercontent.com/16885065/123318287-57506d80-d52f-11eb-89d8-cf0a3f8ab4ee.png)
+
+
 # Disclaimer!
 
 This is a PoC. The author is not responsible for any illegitimate use.

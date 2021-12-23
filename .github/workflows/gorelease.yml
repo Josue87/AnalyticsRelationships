@@ -20,7 +20,7 @@ jobs:
         with:
           go-version: 1.17.2
       -
-        run: cd ${{ github.workspace }}/.. && wget https://raw.githubusercontent.com/PinkDev1/hacker-scoper/main/.github/.goreleaser.yml && pwd
+        run: cd ${{ github.workspace }}/.. && wget https://raw.githubusercontent.com/Josue87/AnalyticsRelationships/main/.github/.goreleaser.yml && pwd
       -
         name: run GoReleaser
         uses: goreleaser/goreleaser-action@v2.4.1

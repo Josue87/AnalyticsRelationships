@@ -199,9 +199,22 @@ func main() {
 	if *url != "" {
 		start(*url)
 	} else {
-		scanner := bufio.NewScanner(os.Stdin)
-		for scanner.Scan() {
-			start(scanner.Text())
-		}
+		//read from standard input (stdin)
+
+		stat, _ := os.Stdin.Stat()
+		if (stat.Mode() & os.ModeCharDevice) == 0 {
+			//data is being piped to stdin
+			//read stdin
+			scanner := bufio.NewScanner(os.Stdin)
+			for scanner.Scan() {
+				if err := scanner.Err(); err != nil {
+					crash("bufio couldn't read stdin correctly.", err)
+				} else {
+					start(scanner.Text())
+				}
+			}
+
+		} //else { //stdin is from a terminal }
+
 	}
 }

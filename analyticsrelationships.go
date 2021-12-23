@@ -196,8 +196,9 @@ func main() {
 	url := flag.String("url", "", "URL to extract Google Analytics ID")
 	flag.Parse()
 	banner()
-	if *url != "" {
-		start(*url)
+	if url != "" {
+		//start main processing
+		start(url)
 	} else {
 		//read from standard input (stdin)
 

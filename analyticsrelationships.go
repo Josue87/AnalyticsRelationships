@@ -13,6 +13,23 @@ import (
 	"time"
 )
 
+const colorReset = "\033[0m"
+const colorYellow = "\033[33m"
+const colorRed = "\033[31m"
+
+func crash(message string, err error) {
+	fmt.Print(string(colorRed) + "[ERROR]: " + message + string(colorReset) + "\n")
+	panic(err)
+}
+
+func warning(message string) {
+	fmt.Print(string(colorYellow) + "[WARNING]: " + message + string(colorReset) + "\n")
+}
+
+func info(message string) {
+	fmt.Print("[-]: " + message + "\n")
+}
+
 func banner() {
 	data := `
 ██╗   ██╗ █████╗       ██╗██████╗                        
@@ -32,7 +49,7 @@ func banner() {
 `
 	data += "\033[32m> \033[0mGet related domains / subdomains by looking at Google Analytics IDs\n"
 	data += "\033[32m> \033[0mGO Version\n"
-	data += "\033[32m> \033[0mBy @JosueEncinar\n"
+	data += "\033[32m> \033[0mBy @JosueEncinar and Pinkdev1\n"
 
 	println(data)
 }
@@ -149,56 +166,104 @@ func contains(data []string, value string) bool {
 	return false
 }
 
-func showDomains(ua string) {
-	fmt.Println(">> " + ua)
+func showDomains(ua string, chainMode bool) {
 	allDomains := getDomains(ua)
-	if len(allDomains) == 0 {
-		fmt.Println("|__ NOT FOUND")
+	if !chainMode {
+		fmt.Println(">> " + ua)
+		if len(allDomains) == 0 {
+			fmt.Println("|__ NOT FOUND")
+		}
+		for _, domain := range allDomains {
+			fmt.Println("|__ " + domain)
+		}
+		fmt.Println("")
+	} else {
+		if len(allDomains) == 0 {
+			warning("NOT FOUND")
+		}
+		for _, domain := range allDomains {
+			if domain == "error getting results" {
+				var err error
+				crash("Server-side error on builtwith.com: error getting results", err)
+			}
+			fmt.Println(domain)
+		}
 	}
-	for _, domain := range allDomains {
-		fmt.Println("|__ " + domain)
-	}
-	fmt.Println("")
+
 }
 
-func start(url string) {
+func start(url string, chainMode bool) {
 	if !strings.HasPrefix(url, "http") {
 		url = "https://" + url
 	}
-	println("[+] Analyzing url: " + url)
+	if !chainMode {
+		info("Analyzing url: " + url)
+	}
 	uaResult, resultTagManager := getGoogleTagManager(url)
 	if len(resultTagManager) > 0 {
 		var visited = []string{}
 		var allUAs []string
 		if !uaResult {
 			urlGoogleTagManager := resultTagManager[0]
-			println("[+] URL with UA: " + urlGoogleTagManager)
+			if !chainMode {
+				info("URL with UA: " + urlGoogleTagManager)
+			}
 			allUAs = getUA(urlGoogleTagManager)
 		} else {
-			println("[+] Found UA directly")
+			if !chainMode {
+				info("Found UA directly")
+			}
 			allUAs = resultTagManager
 		}
-		println("[+] Obtaining information from builtwith and hackertarget\n")
+		if !chainMode {
+			info("Obtaining information from builtwith and hackertarget\n")
+		}
 		for _, ua := range allUAs {
 			baseUA := strings.Join(strings.Split(ua, "-")[0:2], "-")
 			if !contains(visited, baseUA) {
 				visited = append(visited, baseUA)
-				showDomains(baseUA)
+				showDomains(baseUA, chainMode)
 			}
 		}
-		println("\n[+] Done!")
+		if !chainMode {
+			info("Done!")
+		}
 	} else {
-		println("[-] Tagmanager URL not found")
+		warning("Tagmanager URL not found")
+		//Now, the program exits
 	}
 }
 
+//needs to be a global variable
+var chainMode bool
+
 func main() {
-	url := flag.String("url", "", "URL to extract Google Analytics ID")
+	var url string
+
+	flag.StringVar(&url, "u", "", "URL to extract Google Analytics ID")
+	flag.StringVar(&url, "url", "", "URL to extract Google Analytics ID")
+	flag.BoolVar(&chainMode, "ch", false, "In \"chain-mode\" we only output the important information. No decorations.")
+	flag.BoolVar(&chainMode, "chain-mode", false, "In \"chain-mode\" we only output the important information. No decorations.")
+
+	const usage = `Usage: ./analyticsrelationships -u URL [--chain-mode]
+  -u, --url string
+      URL to extract Google Analytics ID
+  -ch, --chain-mode
+      In "chain-mode" we only output the important information. No decorations.
+      Default: false
+`
+
+	//https://www.antoniojgutierrez.com/posts/2021-05-14-short-and-long-options-in-go-flags-pkg/
+	flag.Usage = func() { fmt.Print(usage) }
+	//parse CLI arguments
 	flag.Parse()
-	banner()
+	if !chainMode {
+		//display banner
+		banner()
+	}
 	if url != "" {
 		//start main processing
-		start(url)
+		start(url, chainMode)
 	} else {
 		//read from standard input (stdin)
 
@@ -211,7 +276,7 @@ func main() {
 				if err := scanner.Err(); err != nil {
 					crash("bufio couldn't read stdin correctly.", err)
 				} else {
-					start(scanner.Text())
+					start(scanner.Text(), chainMode)
 				}
 			}
 

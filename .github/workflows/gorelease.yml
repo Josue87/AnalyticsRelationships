@@ -1,0 +1,31 @@
+name: goreleaser
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        name: set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17.2
+      -
+        run: cd ${{ github.workspace }}/.. && wget https://raw.githubusercontent.com/PinkDev1/hacker-scoper/main/.github/.goreleaser.yml && pwd
+      -
+        name: run GoReleaser
+        uses: goreleaser/goreleaser-action@v2.4.1
+        with:
+          version: latest
+          args: release --rm-dist --config ${{ github.workspace }}/../.goreleaser.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}

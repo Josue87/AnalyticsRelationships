@@ -60,7 +60,7 @@ func getGoogleTagManager(targetURL string) (bool, []string) {
 	var resultTagManager []string
 	response := getURLResponse(targetURL)
 	if response != "" {
-		pattern := regexp.MustCompile("www\\.googletagmanager\\.com/ns\\.html\\?id=[A-Z0-9\\-]+")
+		pattern := regexp.MustCompile(`www\.googletagmanager\.com/ns\.html\?id=[A-Z0-9\-]+`)
 		data := pattern.FindStringSubmatch(response)
 		if len(data) > 0 {
 			resultTagManager = append(resultTagManager, "https://"+strings.Replace(data[0], "ns.html", "gtm.js", -1))
@@ -70,7 +70,7 @@ func getGoogleTagManager(targetURL string) (bool, []string) {
 			if len(data) > 0 {
 				resultTagManager = append(resultTagManager, "https://www.googletagmanager.com/gtm.js?id="+data[0])
 			} else {
-				pattern = regexp.MustCompile("UA-\\d+-\\d+")
+				pattern = regexp.MustCompile(`UA-\d+-\d+`)
 				aux := pattern.FindAllStringSubmatch(response, -1)
 				var result []string
 				for _, r := range aux {
@@ -107,7 +107,7 @@ func cleanRelationShips(domains [][]string) []string {
 }
 
 func getDomainsFromBuiltWith(id string) []string {
-	pattern := regexp.MustCompile("/relationships/[a-z0-9\\-\\_\\.]+\\.[a-z]+")
+	pattern := regexp.MustCompile(`/relationships/[a-z0-9\-\_\.]+\.[a-z]+`)
 	url := "https://builtwith.com/relationships/tag/" + id
 	response := getURLResponse(url)
 	var allDomains []string = nil

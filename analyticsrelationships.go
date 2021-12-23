@@ -130,7 +130,7 @@ func getDomainsFromHackerTarget(id string) []string {
 func getDomains(id string) []string {
 	var allDomains []string = getDomainsFromBuiltWith(id)
 	domains2 := getDomainsFromHackerTarget(id)
-	if domains2 != nil {
+	if len(domains2) != 0 {
 		for _, domain := range domains2 {
 			if !contains(allDomains, domain) {
 				allDomains = append(allDomains, domain)

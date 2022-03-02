@@ -1,3 +1,3 @@
-module analyticsrelationships
+module github.com/Josue87/analyticsrelationships
 
-go 1.16
+go 1.17

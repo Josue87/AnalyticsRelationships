@@ -18,16 +18,16 @@ const colorYellow = "\033[33m"
 const colorRed = "\033[31m"
 
 func crash(message string, err error) {
-	fmt.Print(string(colorRed) + "[ERROR]: " + message + string(colorReset) + "\n")
+	fmt.Print(string(colorRed) + "[ERROR] " + message + string(colorReset) + "\n")
 	panic(err)
 }
 
 func warning(message string) {
-	fmt.Print(string(colorYellow) + "[WARNING]: " + message + string(colorReset) + "\n")
+	fmt.Print(string(colorYellow) + "[WARNING] " + message + string(colorReset) + "\n")
 }
 
 func info(message string) {
-	fmt.Print("[-]: " + message + "\n")
+	fmt.Print("[-] " + message + "\n")
 }
 
 func banner() {

@@ -49,7 +49,7 @@ func banner() {
 `
 	data += "\033[32m> \033[0mGet related domains / subdomains by looking at Google Analytics IDs\n"
 	data += "\033[32m> \033[0mGO Version\n"
-	data += "\033[32m> \033[0mBy @JosueEncinar and Pinkdev1\n"
+	data += "\033[32m> \033[0mBy @JosueEncinar\n"
 
 	println(data)
 }
